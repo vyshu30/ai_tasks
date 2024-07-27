@@ -8,40 +8,37 @@ load_dotenv()
 # Access the OpenAI API key
 openai_api_key = os.getenv('OPENAI_API_KEY')
 
+# Initialize the OpenAI client with the API key
+openai.api_key = openai_api_key
+
+class OpenAIResponse:
+    def __init__(self, response):
+        self.generated_text = None
+        self.total_tokens = None
+        self._parse_response(response)
+    
+    def _parse_response(self, response):
+        self.generated_text = response.choices[0].message.content.strip()
+        self.total_tokens = response.usage.total_tokens
+    
+    def __str__(self):
+        return f"Generated Text: {self.generated_text}\nTotal Tokens Used: {self.total_tokens}"
 
 # Example of making a request to the OpenAI API
-
 response = openai.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Explain the importance of sustainable development."}
     ],
-    max_tokens=150
+    temperature=0.7,
+    max_tokens=150,
+    top_p=1.0
 )
-print(response)
-#  print(response.choices[0].message['content'].strip())
-# Python dictionary (simulated API response)
-response_dict = {
-    "id": "cmpl-5uIvfBq6I47zr1nTQjVZ9g5F",
-    "object": "text_completion",
-    "created": 1623312226,
-    "model": "text-davinci-003",
-    "choices": [
-        {
-            "text": "Your generated text here.",
-            "index": 0,
-            "logprobs": None,
-            "finish_reason": "length"
-        }
-    ],
-    "usage": {
-        "prompt_tokens": 5,
-        "completion_tokens": 10,
-        "total_tokens": 15
-    }
-}
 
-# Extract and print total_tokens
-total_tokens = response_dict['usage']['total_tokens']
-print(total_tokens)
+# Parse the response using the OpenAIResponse class
+parsed_response = OpenAIResponse(response)
+
+# Print the results
+print(parsed_response.generated_text)
+print(f"Total tokens used: {parsed_response.total_tokens}")
