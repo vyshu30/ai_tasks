@@ -24,21 +24,33 @@ class OpenAIResponse:
     def __str__(self):
         return f"Generated Text: {self.generated_text}\nTotal Tokens Used: {self.total_tokens}"
 
-# Example of making a request to the OpenAI API
-response = openai.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[
+class OpenAIChatWrapper:
+    def __init__(self, model="gpt-3.5-turbo", temperature=0.7, max_tokens=150, top_p=1.0):
+        self.model = model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        self.top_p = top_p
+
+    def send_message(self, messages):
+        response = openai.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            top_p=self.top_p
+        )
+        return OpenAIResponse(response)
+
+# Example of using the OpenAIChatWrapper class
+if __name__ == "__main__":
+    chat_wrapper = OpenAIChatWrapper()
+    messages = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Explain the importance of sustainable development."}
-    ],
-    temperature=0.7,
-    max_tokens=150,
-    top_p=1.0
-)
+    ]
+    parsed_response = chat_wrapper.send_message(messages)
 
-# Parse the response using the OpenAIResponse class
-parsed_response = OpenAIResponse(response)
+    # Print the results
+    print(parsed_response.generated_text)
+    print(f"Total tokens used: {parsed_response.total_tokens}")
 
-# Print the results
-print(parsed_response.generated_text)
-print(f"Total tokens used: {parsed_response.total_tokens}")
